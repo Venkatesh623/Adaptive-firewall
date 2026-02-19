@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Firewall System v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Courier New',monospace; background:#080c14; color:#00ff88; min-height:100vh; }
+
+header {
+  background:#0a0f1a;
+  border-bottom:1px solid #00ff8833;
+  padding:14px 24px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+header h1 { font-size:1.05rem; letter-spacing:3px; }
+.dot { width:9px;height:9px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:blink 1.2s infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.dot.red { background:#ff4757;box-shadow:0 0 8px #ff4757; }
+#clock { margin-left:auto;font-size:.72rem;color:#4a5568; }
+
+/* Stats bar */
+.stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:18px 24px; }
+.stat { background:#0a0f1a;border:1px solid #00ff8822;border-radius:6px;padding:16px; }
+.stat .lbl { font-size:.65rem;color:#4a5568;text-transform:uppercase;letter-spacing:1px; }
+.stat .val { font-size:1.8rem;font-weight:bold;color:#00ff88;margin-top:6px; }
+.stat.red .val { color:#ff4757; }
+.stat.warn .val { color:#ffa502; }
+.stat.blue .val { color:#1e90ff; }
+
+/* ML bar */
+.ml-bar { margin:0 24px 16px;background:#0a0f1a;border:1px solid #00ff8822;border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:14px; }
+.ml-bar .lbl { font-size:.7rem;color:#4a5568;white-space:nowrap; }
+.progress-wrap { flex:1;background:#161b22;border-radius:3px;height:6px;overflow:hidden; }
+.progress-fill { height:100%;background:#00ff88;border-radius:3px;transition:width .4s; }
+.progress-fill.active { background:#1e90ff; }
+#mlLabel { font-size:.72rem;color:#8b949e;white-space:nowrap; }
+
+/* Attack type pills */
+.attack-pills { margin:0 24px 16px;display:flex;gap:8px;flex-wrap:wrap; }
+.pill { padding:4px 12px;border-radius:20px;font-size:.7rem;border:1px solid;font-weight:bold; }
+.pill-FLOOD   { color:#ff4757;border-color:#ff475755; }
+.pill-ML      { color:#ffa502;border-color:#ffa50255; }
+.pill-MANUAL  { color:#1e90ff;border-color:#1e90ff55; }
+
+/* Main grid */
+.main { display:grid;grid-template-columns:1.4fr 1fr;gap:14px;padding:0 24px 24px; }
+@media(max-width:900px){.main{grid-template-columns:1fr;}}
+
+.panel { background:#0a0f1a;border:1px solid #00ff8822;border-radius:6px;overflow:hidden; }
+.ph { padding:10px 14px;background:#0f1520;border-bottom:1px solid #00ff8815;font-size:.7rem;letter-spacing:1px;color:#4a5568;display:flex;justify-content:space-between;align-items:center; }
+
+/* IP Table */
+.tbl-wrap { max-height:340px;overflow-y:auto; }
+table { width:100%;border-collapse:collapse;font-size:.78rem; }
+th { padding:7px 10px;color:#4a5568;font-weight:normal;border-bottom:1px solid #161b22;text-align:left; }
+td { padding:7px 10px;border-bottom:1px solid #0f1520; }
+tr:hover td { background:#0f1520; }
+
+.pps-bar { width:60px;display:inline-block;vertical-align:middle; }
+.pps-inner { height:4px;border-radius:2px;background:#00ff88;max-width:60px; }
+.pps-inner.warn  { background:#ffa502; }
+.pps-inner.danger{ background:#ff4757; }
+
+/* Badges */
+.badge { display:inline-block;padding:2px 7px;border-radius:3px;font-size:.65rem;font-weight:bold; }
+.b-block   { background:#ff475718;color:#ff4757;border:1px solid #ff475740; }
+.b-ok      { background:#00ff8818;color:#00ff88;border:1px solid #00ff8840; }
+.b-warn    { background:#ffa50218;color:#ffa502;border:1px solid #ffa50240; }
+.b-learn   { background:#1e90ff18;color:#1e90ff;border:1px solid #1e90ff40; }
+.b-ml      { background:#a855f718;color:#a855f7;border:1px solid #a855f740; }
+
+/* Buttons */
+.btn { padding:4px 10px;border:1px solid;border-radius:4px;cursor:pointer;font-size:.7rem;font-family:inherit;background:transparent;transition:.15s; }
+.btn-red   { border-color:#ff4757;color:#ff4757; } .btn-red:hover   { background:#ff475720; }
+.btn-green { border-color:#00ff88;color:#00ff88; } .btn-green:hover { background:#00ff8820; }
+.btn-blue  { border-color:#1e90ff;color:#1e90ff; } .btn-blue:hover  { background:#1e90ff20; }
+.btn-warn  { border-color:#ffa502;color:#ffa502; } .btn-warn:hover  { background:#ffa50220; }
+
+/* Input row */
+.input-row { display:flex;gap:8px;padding:10px 14px;background:#0f1520;border-top:1px solid #161b22; }
+.ip-in { flex:1;background:#080c14;border:1px solid #21262d;border-radius:4px;color:#00ff88;padding:5px 10px;font-family:inherit;font-size:.78rem;outline:none; }
+.ip-in:focus { border-color:#00ff88; }
+
+/* Alerts */
+.alert-list { max-height:340px;overflow-y:auto; }
+.alert-row { padding:9px 14px;border-bottom:1px solid #0f1520;display:flex;gap:8px;align-items:flex-start; }
+.alert-msg  { font-size:.75rem;color:#c9d1d9;flex:1; }
+.alert-time { font-size:.65rem;color:#4a5568;white-space:nowrap; }
+
+/* Config panel */
+.cfg { padding:12px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #161b22; }
+.cfg-row { display:flex;align-items:center;gap:10px;font-size:.75rem; }
+.cfg-row label { color:#4a5568;flex:1; }
+.cfg-row input[type=range] { flex:2;accent-color:#00ff88; }
+.cfg-val { color:#00ff88;width:50px;text-align:right; }
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:#080c14}::-webkit-scrollbar-thumb{background:#21262d;border-radius:2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="dot" id="runDot"></div>
+  <h1>⚡ ADAPTIVE FIREWALL  v2</h1>
+  <span id="clock"></span>
+</header>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="lbl">Packets Captured</div><div class="val" id="sPackets">0</div></div>
+  <div class="stat red"><div class="lbl">Threats Blocked</div><div class="val" id="sThreats">0</div></div>
+  <div class="stat warn"><div class="lbl">Blocked IPs</div><div class="val" id="sBlocked">0</div></div>
+  <div class="stat blue"><div class="lbl">IPs Tracked</div><div class="val" id="sTracked">0</div></div>
+</div>
+
+<!-- ML progress bar -->
+<div class="ml-bar">
+  <span class="lbl">ML ENGINE</span>
+  <div class="progress-wrap"><div class="progress-fill" id="mlFill" style="width:0%"></div></div>
+  <span id="mlLabel">Collecting training packets…</span>
+</div>
+
+<!-- Attack type pills -->
+<div class="attack-pills" id="attackPills"></div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- IP table -->
+  <div class="panel">
+    <div class="ph">
+      <span>IP REPUTATION TABLE</span>
+      <button class="btn btn-warn" onclick="clearBlocks()">FLUSH ALL BLOCKS</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>IP</th><th>Pkts</th><th>PPS</th><th>ML Score</th><th>Status</th><th>Act</th></tr></thead>
+        <tbody id="ipTbl"><tr><td colspan="6" style="text-align:center;color:#4a5568;padding:20px">Waiting for traffic…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="input-row">
+      <input class="ip-in" id="ipIn" placeholder="Enter IP address…" />
+      <button class="btn btn-red"   onclick="doBlock()">BLOCK</button>
+      <button class="btn btn-green" onclick="doUnblock()">UNBLOCK</button>
+    </div>
+    <!-- Sensitivity config -->
+    <div class="cfg">
+      <div class="cfg-row">
+        <label>Flood threshold (pkt/s)</label>
+        <input type="range" id="rFlood" min="10" max="500" value="100" oninput="updateFlood(this.value)">
+        <span class="cfg-val" id="vFlood">100</span>
+      </div>
+      <div class="cfg-row">
+        <label>ML block sensitivity</label>
+        <input type="range" id="rML" min="-0.5" max="-0.05" step="0.05" value="-0.2" oninput="updateML(this.value)">
+        <span class="cfg-val" id="vML">-0.20</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="panel">
+    <div class="ph">
+      <span>SECURITY ALERTS</span>
+      <button class="btn btn-blue" onclick="clearAlerts()">CLEAR</button>
+    </div>
+    <div class="alert-list" id="alertList">
+      <div style="padding:20px;text-align:center;color:#4a5568">No alerts yet.</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const socket = io();
+let alerts = [];
+
+// Clock
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+}, 1000);
+
+// Real-time alert push
+socket.on('new_alert', a => { alerts.unshift(a); renderAlerts(); });
+
+function renderAlerts() {
+  const el = document.getElementById('alertList');
+  if (!alerts.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:#4a5568">No alerts yet.</div>'; return; }
+  el.innerHTML = alerts.slice(0, 80).map(a => `
+    <div class="alert-row">
+      <span class="badge ${a.type==='BLOCK'?'b-block':a.type==='UNBLOCK'?'b-ok':'b-learn'}">${a.type}</span>
+      <span class="badge b-ml" style="font-size:.6rem">${a.attack_type||''}</span>
+      <div>
+        <div class="alert-msg">${a.message}</div>
+        <div class="alert-time">${a.timestamp}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearAlerts() { alerts=[]; renderAlerts(); }
+
+function ppsColor(pps, threshold) {
+  const ratio = pps / threshold;
+  if (ratio >= 1)   return 'danger';
+  if (ratio >= 0.5) return 'warn';
+  return '';
+}
+
+function scoreLabel(score, blocked) {
+  if (blocked) return '<span class="badge b-block">BLOCKED</span>';
+  if (score === null || score === undefined) return '<span class="badge b-learn">LEARNING</span>';
+  if (score < -0.35) return '<span class="badge b-block">HIGH RISK</span>';
+  if (score < -0.15) return '<span class="badge b-warn">SUSPICIOUS</span>';
+  return '<span class="badge b-ok">CLEAN</span>';
+}
+
+let floodThreshold = 100;
+
+async function fetchStatus() {
+  try {
+    const d = await (await fetch('/api/status')).json();
+
+    document.getElementById('sPackets').textContent = d.packets_captured.toLocaleString();
+    document.getElementById('sThreats').textContent = d.threats_blocked;
+    document.getElementById('sBlocked').textContent = d.blocked_ips.length;
+    document.getElementById('sTracked').textContent = Object.keys(d.ip_stats).length;
+
+    // ML bar
+    const pct = d.model_trained ? 100 : Math.round(d.training_progress / d.train_target * 100);
+    const fill = document.getElementById('mlFill');
+    fill.style.width = pct + '%';
+    fill.className = 'progress-fill' + (d.model_trained ? ' active' : '');
+    document.getElementById('mlLabel').textContent = d.model_trained
+      ? '✓ Active — Anomaly Detection Running'
+      : `Collecting: ${d.training_progress}/${d.train_target} packets`;
+
+    // Attack pills
+    const at = d.attack_types || {};
+    document.getElementById('attackPills').innerHTML = Object.keys(at).length === 0
+      ? '<span style="font-size:.7rem;color:#4a5568">No attacks detected yet.</span>'
+      : Object.entries(at).map(([k,v]) => `<div class="pill pill-${k.includes('FLOOD')?'FLOOD':k==='ML-ANOMALY'?'ML':'MANUAL'}">${k}: ${v}</div>`).join('');
+
+    // IP table
+    const ips = Object.entries(d.ip_stats);
+    if (!ips.length) {
+      document.getElementById('ipTbl').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#4a5568;padding:20px">Waiting for traffic…</td></tr>';
+      return;
+    }
+    ips.sort((a,b) => (a[1].pps||0) > (b[1].pps||0) ? -1 : (a[1].blocked&&!b[1].blocked?-1:1));
+    const thr = floodThreshold;
+    document.getElementById('ipTbl').innerHTML = ips.map(([ip, info]) => {
+      const cls = ppsColor(info.pps, thr);
+      const barW = Math.min(60, Math.round((info.pps / Math.max(thr, 1)) * 60));
+      return `<tr>
+        <td style="color:#c9d1d9">${ip}</td>
+        <td>${info.packets}</td>
+        <td>
+          <span style="color:${cls==='danger'?'#ff4757':cls==='warn'?'#ffa502':'#00ff88'}">${info.pps}</span>
+          <div class="pps-bar"><div class="pps-inner ${cls}" style="width:${barW}px"></div></div>
+        </td>
+        <td style="color:${info.avg_score<-0.3?'#ff4757':info.avg_score<-0.15?'#ffa502':'#00ff88'}">${info.avg_score??'—'}</td>
+        <td>${scoreLabel(info.avg_score, info.blocked)}</td>
+        <td>${info.blocked
+          ? `<button class="btn btn-green" onclick="unblockIP('${ip}')">UNBLK</button>`
+          : `<button class="btn btn-red"   onclick="blockIP('${ip}')">BLOCK</button>`}</td>
+      </tr>`;
+    }).join('');
+
+    if (!alerts.length && d.alerts.length) { alerts = d.alerts; renderAlerts(); }
+  } catch(e) { console.error(e); }
+}
+
+async function blockIP(ip) {
+  await fetch('/api/block',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip})});
+  fetchStatus();
+}
+async function unblockIP(ip) {
+  await fetch('/api/unblock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip})});
+  fetchStatus();
+}
+function doBlock()   { const ip=document.getElementById('ipIn').value.trim(); if(ip){blockIP(ip);   document.getElementById('ipIn').value='';} }
+function doUnblock() { const ip=document.getElementById('ipIn').value.trim(); if(ip){unblockIP(ip); document.getElementById('ipIn').value='';} }
+
+async function clearBlocks() {
+  if (!confirm('Flush ALL iptables INPUT/OUTPUT rules and unblock all IPs?')) return;
+  await fetch('/api/clear_blocks',{method:'POST'});
+  fetchStatus();
+}
+
+function updateFlood(v) {
+  floodThreshold = parseInt(v);
+  document.getElementById('vFlood').textContent = v;
+  fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({flood_pps_threshold:parseInt(v)})});
+}
+function updateML(v) {
+  document.getElementById('vML').textContent = parseFloat(v).toFixed(2);
+  fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({block_threshold:parseFloat(v)})});
+}
+
+fetchStatus();
+setInterval(fetchStatus, 2000);
+</script>
+</body>
+</html>
