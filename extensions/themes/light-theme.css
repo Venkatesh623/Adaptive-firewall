@@ -1,0 +1,339 @@
+/**
+ * Light Theme Override for Adaptive Firewall Dashboard
+ * This file overrides the default dark theme without modifying original files
+ */
+
+/* ===== CSS Variables for Easy Theming ===== */
+:root[data-theme="light"] {
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f7fa;
+  --bg-tertiary: #e8ecf1;
+  --bg-panel: #ffffff;
+  --bg-header: #f5f7fa;
+  
+  /* Text Colors */
+  --text-primary: #1a202e;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --text-accent: #2d5bff;
+  
+  /* Border Colors */
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e0;
+  --border-strong: #a0aec0;
+  
+  /* Status Colors */
+  --success: #10b981;
+  --success-bg: #d1fae5;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --danger: #ef4444;
+  --danger-bg: #fee2e2;
+  --info: #3b82f6;
+  --info-bg: #dbeafe;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Global Overrides ===== */
+:root[data-theme="light"] body {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:root[data-theme="light"] header {
+  background: var(--bg-header) !important;
+  border-bottom: 1px solid var(--border-medium) !important;
+}
+
+:root[data-theme="light"] header h1 {
+  color: var(--text-primary) !important;
+}
+
+:root[data-theme="light"] .dot {
+  background: var(--success) !important;
+  box-shadow: 0 0 8px var(--success) !important;
+}
+
+:root[data-theme="light"] .dot.red {
+  background: var(--danger) !important;
+  box-shadow: 0 0 8px var(--danger) !important;
+}
+
+:root[data-theme="light"] #clock {
+  color: var(--text-secondary) !important;
+}
+
+/* ===== Stats Cards ===== */
+:root[data-theme="light"] .stat {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+:root[data-theme="light"] .stat .lbl {
+  color: var(--text-secondary) !important;
+}
+
+:root[data-theme="light"] .stat .val {
+  color: var(--text-accent) !important;
+}
+
+:root[data-theme="light"] .stat.red .val {
+  color: var(--danger) !important;
+}
+
+:root[data-theme="light"] .stat.warn .val {
+  color: var(--warning) !important;
+}
+
+:root[data-theme="light"] .stat.blue .val {
+  color: var(--info) !important;
+}
+
+/* ===== ML Progress Bar ===== */
+:root[data-theme="light"] .ml-bar {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+:root[data-theme="light"] .ml-bar .lbl {
+  color: var(--text-secondary) !important;
+}
+
+:root[data-theme="light"] .progress-wrap {
+  background: var(--bg-tertiary) !important;
+}
+
+:root[data-theme="light"] .progress-fill {
+  background: var(--success) !important;
+}
+
+:root[data-theme="light"] .progress-fill.active {
+  background: var(--info) !important;
+}
+
+:root[data-theme="light"] #mlLabel {
+  color: var(--text-muted) !important;
+}
+
+/* ===== Attack Pills ===== */
+:root[data-theme="light"] .pill {
+  border-width: 1px !important;
+}
+
+:root[data-theme="light"] .pill-FLOOD {
+  color: var(--danger) !important;
+  border-color: var(--danger-bg) !important;
+  background: var(--danger-bg) !important;
+}
+
+:root[data-theme="light"] .pill-ML {
+  color: var(--warning) !important;
+  border-color: var(--warning-bg) !important;
+  background: var(--warning-bg) !important;
+}
+
+:root[data-theme="light"] .pill-MANUAL {
+  color: var(--info) !important;
+  border-color: var(--info-bg) !important;
+  background: var(--info-bg) !important;
+}
+
+/* ===== Panels ===== */
+:root[data-theme="light"] .panel {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+:root[data-theme="light"] .ph {
+  background: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* ===== IP Table ===== */
+:root[data-theme="light"] table {
+  background: var(--bg-panel) !important;
+}
+
+:root[data-theme="light"] th {
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  background: var(--bg-secondary) !important;
+}
+
+:root[data-theme="light"] td {
+  border-bottom: 1px solid var(--border-light) !important;
+  color: var(--text-primary) !important;
+}
+
+:root[data-theme="light"] tr:hover td {
+  background: var(--bg-secondary) !important;
+}
+
+:root[data-theme="light"] .pps-inner {
+  background: var(--success) !important;
+}
+
+:root[data-theme="light"] .pps-inner.warn {
+  background: var(--warning) !important;
+}
+
+:root[data-theme="light"] .pps-inner.danger {
+  background: var(--danger) !important;
+}
+
+/* ===== Badges ===== */
+:root[data-theme="light"] .badge {
+  border-width: 1px !important;
+}
+
+:root[data-theme="light"] .b-block {
+  background: var(--danger-bg) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+:root[data-theme="light"] .b-ok {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+  border-color: var(--success) !important;
+}
+
+:root[data-theme="light"] .b-warn {
+  background: var(--warning-bg) !important;
+  color: var(--warning) !important;
+  border-color: var(--warning) !important;
+}
+
+:root[data-theme="light"] .b-learn {
+  background: var(--info-bg) !important;
+  color: var(--info) !important;
+  border-color: var(--info) !important;
+}
+
+:root[data-theme="light"] .b-ml {
+  background: #f3e8ff !important;
+  color: #9333ea !important;
+  border-color: #9333ea !important;
+}
+
+/* ===== Buttons ===== */
+:root[data-theme="light"] .btn {
+  border-width: 1px !important;
+}
+
+:root[data-theme="light"] .btn-red {
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+}
+
+:root[data-theme="light"] .btn-red:hover {
+  background: var(--danger-bg) !important;
+}
+
+:root[data-theme="light"] .btn-green {
+  border-color: var(--success) !important;
+  color: var(--success) !important;
+}
+
+:root[data-theme="light"] .btn-green:hover {
+  background: var(--success-bg) !important;
+}
+
+:root[data-theme="light"] .btn-blue {
+  border-color: var(--info) !important;
+  color: var(--info) !important;
+}
+
+:root[data-theme="light"] .btn-blue:hover {
+  background: var(--info-bg) !important;
+}
+
+:root[data-theme="light"] .btn-warn {
+  border-color: var(--warning) !important;
+  color: var(--warning) !important;
+}
+
+:root[data-theme="light"] .btn-warn:hover {
+  background: var(--warning-bg) !important;
+}
+
+/* ===== Input Fields ===== */
+:root[data-theme="light"] .input-row {
+  background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+:root[data-theme="light"] .ip-in {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-medium) !important;
+  color: var(--text-primary) !important;
+}
+
+:root[data-theme="light"] .ip-in:focus {
+  border-color: var(--success) !important;
+}
+
+/* ===== Config Panel ===== */
+:root[data-theme="light"] .cfg {
+  border-top: 1px solid var(--border-light) !important;
+}
+
+:root[data-theme="light"] .cfg-row label {
+  color: var(--text-secondary) !important;
+}
+
+:root[data-theme="light"] .cfg-val {
+  color: var(--text-accent) !important;
+}
+
+:root[data-theme="light"] input[type=range] {
+  accent-color: var(--success) !important;
+}
+
+/* ===== Alerts ===== */
+:root[data-theme="light"] .alert-row {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+:root[data-theme="light"] .alert-msg {
+  color: var(--text-primary) !important;
+}
+
+:root[data-theme="light"] .alert-time {
+  color: var(--text-muted) !important;
+}
+
+/* ===== Scrollbars ===== */
+:root[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--bg-tertiary) !important;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--border-medium) !important;
+}
+
+/* ===== Additional Light Mode Enhancements ===== */
+:root[data-theme="light"] .panel {
+  border-radius: 8px !important;
+}
+
+:root[data-theme="light"] .stat {
+  border-radius: 8px !important;
+}
+
+:root[data-theme="light"] .btn {
+  border-radius: 6px !important;
+}
+
+:root[data-theme="light"] .badge {
+  border-radius: 4px !important;
+}
